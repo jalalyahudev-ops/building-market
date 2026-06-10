@@ -31,16 +31,9 @@ function AuthObserver({ children }: { children: React.ReactNode }) {
           const docRef = doc(db, 'users', firebaseUser.uid);
           const docSnap = await getDoc(docRef);
           
-          if (!docSnap.exists()) {
-            const newUser = {
-              role: 'buyer', // default
-              displayName: firebaseUser.displayName || 'Пользователь',
-              photoURL: firebaseUser.photoURL || null,
-              createdAt: new Date().toISOString()
-            };
-            await setDoc(docRef, newUser);
+          if (docSnap.exists()) {
+            await fetchProfile(firebaseUser.uid);
           }
-          await fetchProfile(firebaseUser.uid);
         } catch (e) {
           console.error("Error setting up user profile", e);
         }

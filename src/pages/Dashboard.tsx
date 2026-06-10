@@ -13,7 +13,7 @@ export default function Dashboard() {
   const user = useAuthStore((state: any) => state.user);
   const [store, setStore] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(useAuthStore.getState().user?.role === 'admin' ? 'admin' : 'overview');
   
   // Products and Orders state
   const [products, setProducts] = useState<any[]>([]);

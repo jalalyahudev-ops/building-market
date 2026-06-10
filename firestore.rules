@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { allow read, write: if false; }
+
+    function isValidId(id) { return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    // We remove email_verified requirement here to allow easy initial login using email/password or google. If production, keep it.
+    // For this MVP let's keep request.auth != null for simplicity.
+    function isAdmin() { return isSignedIn() && (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) || request.auth.token.email == 'jalalyahudev@gmail.com'); }
+    
+    // Admins Collection
+    match /admins/{userId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Users
+    function isValidUser(data) {
+      return data.keys().hasAll(['role', 'createdAt']) && 
+             data.keys().size() <= 4 &&
+             data.role in ['buyer', 'seller', 'admin'] &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1000));
+    }
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && incoming().createdAt == request.time && (incoming().role == 'buyer' || isAdmin());
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin()) && isValidUser(incoming()) && incoming().createdAt == existing().createdAt &&
+        (isAdmin() || (incoming().role == existing().role && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL'])));
+    }
+
+    // Stores
+    function isValidStore(data) {
+      return data.keys().hasAll(['ownerId', 'name', 'status', 'createdAt', 'updatedAt']) &&
+             data.keys().size() <= 10 &&
+             data.ownerId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 1000)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 300)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 50)) &&
+             (!('operatingHours' in data) || (data.operatingHours is string && data.operatingHours.size() <= 200)) &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             (!('rating' in data) || (data.rating is number && data.rating >= 0 && data.rating <= 5));
+    }
+    match /stores/{storeId} {
+      allow get: if true;
+      allow list: if resource.data.status == 'approved' || isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(storeId) && isValidStore(incoming()) && incoming().createdAt == request.time && incoming().updatedAt == request.time && incoming().status == 'pending' && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+      allow update: if isSignedIn() && isValidStore(incoming()) && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time && incoming().ownerId == existing().ownerId &&
+        (
+          isAdmin() ||
+          (existing().ownerId == request.auth.uid && incoming().status == existing().status && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'address', 'phone', 'operatingHours', 'updatedAt']))
+        );
+    }
+
+    // Products
+    function isValidProduct(data) {
+      return data.keys().hasAll(['storeId', 'name', 'category', 'price', 'stock', 'status', 'createdAt', 'updatedAt']) &&
+             data.keys().size() <= 10 &&
+             data.storeId is string && isValidId(data.storeId) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 100 &&
+             data.price is number && data.price >= 0 &&
+             data.stock is number && data.stock >= 0 &&
+             (!('imageUrls' in data) || (data.imageUrls is list && data.imageUrls.size() <= 10 && (data.imageUrls.size() == 0 || data.imageUrls[0] is string))) &&
+             (!('rating' in data) || (data.rating is number && data.rating >= 0 && data.rating <= 5)) &&
+             data.status in ['active', 'hidden'];
+    }
+    match /products/{productId} {
+      allow get: if true;
+      allow list: if resource.data.status == 'active' || isAdmin() || (isSignedIn() && get(/databases/$(database)/documents/stores/$(resource.data.storeId)).data.ownerId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(productId) && isValidProduct(incoming()) && incoming().createdAt == request.time && incoming().updatedAt == request.time &&
+        (isAdmin() || get(/databases/$(database)/documents/stores/$(incoming().storeId)).data.ownerId == request.auth.uid);
+      allow update: if isSignedIn() && isValidProduct(incoming()) && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time && incoming().storeId == existing().storeId &&
+        (isAdmin() || get(/databases/$(database)/documents/stores/$(existing().storeId)).data.ownerId == request.auth.uid);
+    }
+
+    // Orders
+    function isValidOrder(data) {
+      return data.keys().hasAll(['buyerId', 'storeId', 'items', 'totalAmount', 'status', 'createdAt', 'updatedAt']) &&
+             data.keys().size() <= 7 &&
+             data.buyerId == request.auth.uid &&
+             data.storeId is string && isValidId(data.storeId) &&
+             data.items is list && data.items.size() > 0 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status in ['pending', 'accepted', 'completed', 'cancelled'];
+    }
+    match /orders/{orderId} {
+      allow get: if isSignedIn() && (resource.data.buyerId == request.auth.uid || isAdmin() || get(/databases/$(database)/documents/stores/$(resource.data.storeId)).data.ownerId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.buyerId == request.auth.uid || isAdmin() || get(/databases/$(database)/documents/stores/$(resource.data.storeId)).data.ownerId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(orderId) && isValidOrder(incoming()) && incoming().createdAt == request.time && incoming().updatedAt == request.time && incoming().status == 'pending' && exists(/databases/$(database)/documents/stores/$(incoming().storeId));
+      allow update: if isSignedIn() && isValidOrder(incoming()) && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time && incoming().buyerId == existing().buyerId && incoming().storeId == existing().storeId &&
+        (
+           isAdmin() ||
+           (existing().buyerId == request.auth.uid && incoming().status == 'cancelled' && existing().status == 'pending' && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
+           (get(/databases/$(database)/documents/stores/$(existing().storeId)).data.ownerId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+        );
+    }
+
+    // User Favorites
+    function isValidFavorite(data) {
+      return data.keys().hasAll(['productId', 'createdAt']) && data.keys().size() == 2 &&
+             data.productId is string && isValidId(data.productId);
+    }
+    match /users/{userId}/favorites/{favoriteId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(favoriteId) && isValidFavorite(incoming()) && incoming().createdAt == request.time && exists(/databases/$(database)/documents/products/$(incoming().productId));
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Reviews
+    function isValidReview(data) {
+      return data.keys().hasAll(['targetId', 'type', 'authorId', 'rating', 'createdAt']) &&
+             data.keys().size() <= 6 &&
+             data.targetId is string && isValidId(data.targetId) &&
+             data.type in ['store', 'product'] &&
+             data.authorId == request.auth.uid &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             (!('text' in data) || (data.text is string && data.text.size() <= 1000));
+    }
+    match /reviews/{reviewId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && isValidId(reviewId) && isValidReview(incoming()) && incoming().createdAt == request.time;
+      allow delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+  }
+}

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 interface AIStore {
   categorizeProduct: (name: string, description: string, imageBase64?: string) => Promise<{category: string; subcategory?: string; tags?: string[]}>;
   chatAssistant: (messages: {role: string, parts: {text: string}[]}[]) => Promise<string>;
-  processServiceRequest: (text: string) => Promise<{category: string; quantity: number; datetime?: string; location?: string; task_description?: string}>;
+  processServiceRequest: (text: string) => Promise<{category: string; quantity: number; datetime?: string; location?: string; task_description?: string; materials?: {name: string, quantity: string}[]}>;
 }
 
 export const useAIStore = create<AIStore>(() => ({

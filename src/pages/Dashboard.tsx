@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/auth';
 import { useAIStore } from '../store/ai';
 import { Navigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Store, User, FileText, ShoppingBag, Plus, Settings, TrendingUp, Package, Box, Check, X } from 'lucide-react';
+import { Store, User, FileText, ShoppingBag, Plus, Settings, TrendingUp, Package, Box, Check, X, Download } from 'lucide-react';
+
 import { collection, query, where, getDocs, addDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Input } from '../components/ui/input';
@@ -211,6 +214,54 @@ export default function Dashboard() {
     } catch (err: any) {
       alert("Error updating order: " + err.message);
     }
+  };
+
+  const downloadInvoice = (order: any) => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.text("INVOICE", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Order ID: #${order.id.substring(0, 8).toUpperCase()}`, 14, 30);
+    doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 14, 35);
+    doc.text(`Status: ${order.status.toUpperCase()}`, 14, 40);
+
+    // Bill To
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text("Bill To:", 14, 52);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`User ID: ${order.buyerId}`, 14, 58);
+
+    // Prepare table data
+    const tableColumn = ["Item", "Unit Price", "Quantity", "Total"];
+    const tableRows = (order.items || []).map((item: any) => [
+      item.name,
+      `${item.price.toLocaleString()} SUM`,
+      item.quantity,
+      `${(item.price * item.quantity).toLocaleString()} SUM`
+    ]);
+
+    autoTable(doc, {
+      startY: 65,
+      head: [tableColumn],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [59, 130, 246] }
+    });
+
+    // Total
+    const finalY = (doc as any).lastAutoTable.finalY || 65;
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text(`Total Amount: ${order.totalAmount.toLocaleString()} SUM`, 14, finalY + 15);
+
+    // Save
+    doc.save(`Invoice_${order.id.substring(0,8)}.pdf`);
   };
 
   const renderOverview = () => (
@@ -579,9 +630,15 @@ export default function Dashboard() {
                               </div>
                             ))}
                           </div>
-                          {o.status === 'pending' && (
-                            <Button variant="destructive" size="sm" onClick={() => handleUpdateOrder(o.id, 'cancelled', true)}>Cancel Order</Button>
-                          )}
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => downloadInvoice(o)}>
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Invoice
+                            </Button>
+                            {o.status === 'pending' && (
+                              <Button variant="destructive" size="sm" onClick={() => handleUpdateOrder(o.id, 'cancelled', true)}>Cancel Order</Button>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     ))
@@ -621,7 +678,11 @@ export default function Dashboard() {
                             ))}
                           </div>
                           
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
+                            <Button variant="outline" size="sm" onClick={() => downloadInvoice(o)}>
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Invoice
+                            </Button>
                             {o.status === 'pending' && (
                               <Button size="sm" className="bg-brand-orange-500 hover:bg-brand-orange-600" onClick={() => handleUpdateOrder(o.id, 'accepted', false)}>Accept Order</Button>
                             )}

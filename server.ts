@@ -105,13 +105,14 @@ Important: Try to map the product to one of our primary categories if appropriat
 User request: "${text}"
 
 Extract the following:
-- category: One of ['грузчики', 'строители', 'электрики', 'сантехники', 'уборка']. If it doesn't fit exactly, map it to the closest one.
+- category: One of ['грузчики', 'строители', 'электрики', 'сантехники', 'уборка', 'маляры', 'бетонщики']. If it doesn't fit exactly, map it to the closest one.
 - quantity: number of workers requested (default to 1 if not specified).
 - datetime: when is it needed? (e.g. "завтра", "сегодня", "15 августа").
 - location: where is it needed? (e.g. "в Ташкенте", "на Юнусабаде").
 - task_description: a brief summary of what they need done.
+- materials: an array of objects representing materials needed, if mentioned (e.g. [{ name: "цемент", quantity: "20 мешков" }, { name: "краска", quantity: "3 банки" }]).
 
-If any field is missing, return an empty string or null for that field, but try to extract as much as possible.`;
+If any field is missing, return an empty string/null/empty array for that field, but try to extract as much as possible.`;
 
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
@@ -123,7 +124,7 @@ If any field is missing, return an empty string or null for that field, but try 
             properties: {
               category: {
                 type: Type.STRING,
-                description: "Category of workers ('грузчики', 'строители', 'электрики', 'сантехники', 'уборка')"
+                description: "Category of workers"
               },
               quantity: {
                 type: Type.INTEGER,
@@ -140,6 +141,17 @@ If any field is missing, return an empty string or null for that field, but try 
               task_description: {
                 type: Type.STRING,
                 description: "Summary of the task"
+              },
+              materials: {
+                type: Type.ARRAY,
+                description: "List of materials mentioned in the request",
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING },
+                    quantity: { type: Type.STRING }
+                  }
+                }
               }
             },
             required: ["category", "quantity"]

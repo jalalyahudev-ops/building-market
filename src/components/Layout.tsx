@@ -35,7 +35,11 @@ export function Layout() {
 
           <nav className="flex items-center gap-4">
             <Link to="/marketplace" className="flex items-center gap-2 hover:text-brand-orange-500 transition-colors">
-              <span className="text-sm font-medium hidden sm:inline-block">Marketplace</span>
+              <span className="text-sm font-medium hidden sm:inline-block">Товары</span>
+            </Link>
+            
+            <Link to="/workers" className="flex items-center gap-2 hover:text-brand-orange-500 transition-colors">
+              <span className="text-sm font-medium hidden sm:inline-block">Услуги & Мастера</span>
             </Link>
             
             <Link to="/cart" className="relative group flex items-center hover:text-brand-orange-500 transition-colors">

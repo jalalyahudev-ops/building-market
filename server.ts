@@ -93,6 +93,69 @@ Important: Try to map the product to one of our primary categories if appropriat
     }
   });
 
+  app.post("/api/process-service-request", async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ error: "Text is required" });
+      }
+
+      const prompt = `Parse the user's service request for construction/home services. 
+User request: "${text}"
+
+Extract the following:
+- category: One of ['грузчики', 'строители', 'электрики', 'сантехники', 'уборка']. If it doesn't fit exactly, map it to the closest one.
+- quantity: number of workers requested (default to 1 if not specified).
+- datetime: when is it needed? (e.g. "завтра", "сегодня", "15 августа").
+- location: where is it needed? (e.g. "в Ташкенте", "на Юнусабаде").
+- task_description: a brief summary of what they need done.
+
+If any field is missing, return an empty string or null for that field, but try to extract as much as possible.`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              category: {
+                type: Type.STRING,
+                description: "Category of workers ('грузчики', 'строители', 'электрики', 'сантехники', 'уборка')"
+              },
+              quantity: {
+                type: Type.INTEGER,
+                description: "Number of workers (default 1)"
+              },
+              datetime: {
+                type: Type.STRING,
+                description: "When they are needed"
+              },
+              location: {
+                type: Type.STRING,
+                description: "Where they are needed"
+              },
+              task_description: {
+                type: Type.STRING,
+                description: "Summary of the task"
+              }
+            },
+            required: ["category", "quantity"]
+          }
+        }
+      });
+
+      const resultText = response.text || "{}";
+      const result = JSON.parse(resultText);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error processing service request:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/chat", async (req, res) => {
     try {
       const { messages } = req.body;

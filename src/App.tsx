@@ -17,6 +17,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Marketplace from './pages/Marketplace';
 import Cart from './pages/Cart';
+import Workers from './pages/Workers';
 
 function AuthObserver({ children }: { children: React.ReactNode }) {
   const loading = useAuthStore((state: any) => state.loading);
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="login" element={<Login />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="marketplace" element={<Marketplace />} />
+            <Route path="workers" element={<Workers />} />
             <Route path="cart" element={<Cart />} />
           </Route>
         </Routes>

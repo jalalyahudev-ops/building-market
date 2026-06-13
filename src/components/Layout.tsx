@@ -1,18 +1,22 @@
 import { Outlet, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { useCartStore } from '../store/cart';
+import { useLangStore } from '../store/lang';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
-import { Hammer, User, LogOut, Heart, ShoppingCart } from 'lucide-react';
+import { Hammer, User, LogOut, Heart, ShoppingCart, Globe } from 'lucide-react';
 import { Button } from './ui/button';
 
 export function Layout() {
   const { user, firebaseUser } = useAuthStore();
   const cartItemsCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
+  const { lang, setLang, t } = useLangStore();
 
   const handleLogout = async () => {
     await signOut(auth);
   };
+
+  const toggleLang = () => setLang(lang === 'ru' ? 'uz' : 'ru');
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-100 text-slate-800">
@@ -34,12 +38,17 @@ export function Layout() {
           </div>
 
           <nav className="flex items-center gap-4">
+            <button onClick={toggleLang} className="flex items-center gap-1 hover:text-brand-orange-500 uppercase font-bold text-xs tracking-widest text-slate-300 mr-2 border border-slate-700 px-2 py-1 rounded">
+              <Globe className="w-4 h-4" />
+              {lang}
+            </button>
+
             <Link to="/marketplace" className="flex items-center gap-2 hover:text-brand-orange-500 transition-colors">
-              <span className="text-sm font-medium hidden sm:inline-block">Товары</span>
+              <span className="text-sm font-medium hidden sm:inline-block">{t('nav.marketplace')}</span>
             </Link>
             
             <Link to="/workers" className="flex items-center gap-2 hover:text-brand-orange-500 transition-colors">
-              <span className="text-sm font-medium hidden sm:inline-block">Услуги & Мастера</span>
+              <span className="text-sm font-medium hidden sm:inline-block">{t('nav.workers')}</span>
             </Link>
             
             <Link to="/cart" className="relative group flex items-center hover:text-brand-orange-500 transition-colors">
@@ -57,18 +66,20 @@ export function Layout() {
                 </Link>
                 <Link to="/dashboard" className="flex items-center gap-2 hover:text-brand-orange-500 transition-colors">
                   <User className="h-5 w-5" />
-                  <span className="text-sm font-medium hidden sm:inline-block">Кабинет</span>
+                  <span className="text-sm font-medium hidden sm:inline-block">{t('nav.dashboard')}</span>
                 </Link>
-                <button onClick={handleLogout} className="hover:text-red-400 transition-colors" title="Выйти">
+                <button onClick={handleLogout} className="hover:text-red-400 transition-colors" title={t('nav.logout')}>
                   <LogOut className="h-5 w-5" />
                 </button>
               </>
             ) : (
-              <Link to="/login">
-                <Button className="bg-brand-orange-500 hover:bg-brand-orange-600 text-white border-0">
-                  Войти
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link to="/login?mode=register">
+                  <Button className="bg-brand-orange-500 hover:bg-brand-orange-600 text-white border-0 h-9 px-3 sm:px-4 shadow-sm">
+                    {t('nav.register')}
+                  </Button>
+                </Link>
+              </div>
             )}
           </nav>
         </div>

@@ -9,7 +9,7 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     // We remove email_verified requirement here to allow easy initial login using email/password or google. If production, keep it.
     // For this MVP let's keep request.auth != null for simplicity.
-    function isAdmin() { return isSignedIn() && (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) || (request.auth.token.email != null && request.auth.token.email == 'jalalyahudev@gmail.com')); }
+    function isAdmin() { return isSignedIn() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || (request.auth.token.email != null && request.auth.token.email == 'jalalyahudev@gmail.com')); }
     
     // Admins Collection
     match /admins/{userId} {
@@ -28,7 +28,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isSignedIn();
       allow list: if isAdmin();
-      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && incoming().createdAt is string && (incoming().role == 'buyer' || incoming().role == 'seller' || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && incoming().createdAt is string;
       allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin()) && isValidUser(incoming()) && incoming().createdAt == existing().createdAt &&
         (isAdmin() || (incoming().role == existing().role && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL'])));
     }

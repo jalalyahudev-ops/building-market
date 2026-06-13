@@ -18,6 +18,7 @@ export default function Dashboard() {
   // Products and Orders state
   const [products, setProducts] = useState<any[]>([]);
   const [addingProduct, setAddingProduct] = useState(false);
+  const [productImg, setProductImg] = useState<string | null>(null);
   const [myOrders, setMyOrders] = useState<any[]>([]);
   const [storeOrders, setStoreOrders] = useState<any[]>([]);
   
@@ -127,21 +128,41 @@ export default function Dashboard() {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProductImg(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAddingProduct(true);
     const data = new FormData(e.currentTarget);
-    const name = data.get('name') as string;
-    const description = data.get('description') as string;
+    const inputName = data.get('name') as string;
+    const inputDesc = data.get('description') as string;
     const price = Number(data.get('price'));
     const stock = Number(data.get('stock'));
 
+    if (!inputName && !productImg) {
+      alert("Please provide a product name or an image.");
+      setAddingProduct(false);
+      return;
+    }
+
     try {
       // AI categorization
-      const aiResponse = await useAIStore.getState().categorizeProduct(name, description);
+      const aiResponse = await useAIStore.getState().categorizeProduct(inputName, inputDesc, productImg || undefined);
+      
       const category = aiResponse.category || 'General';
+      const name = inputName || (aiResponse as any).name || 'Unnamed Product';
+      const description = inputDesc || (aiResponse as any).description || '';
 
-      const newProd = {
+      const newProd: any = {
         storeId: store.id,
         name,
         description,
@@ -154,11 +175,15 @@ export default function Dashboard() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+      if (productImg) {
+        newProd.imageUrl = productImg; // storing base64 image here since we don't have separate a bucket for now
+      }
 
       const docRef = await addDoc(collection(db, 'products'), newProd);
       setProducts([...products, { id: docRef.id, ...newProd }]);
-      alert(`Product added successfully! AI categorized it as: ${category}`);
+      alert(`Product "${name}" added successfully! AI categorized it as: ${category}`);
       setActiveTab('store');
+      setProductImg(null); // Reset image after successful creation
     } catch (err: any) {
       alert("Error adding product: " + err.message);
     } finally {
@@ -390,9 +415,13 @@ export default function Dashboard() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {products.map(p => (
-                        <Card key={p.id} className="rounded-2xl border-slate-200 shadow-sm overflow-hidden">
-                          <div className="h-32 bg-slate-100 flex items-center justify-center text-slate-300">
-                            <Box className="w-12 h-12" />
+                        <Card key={p.id} className="rounded-2xl border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                          <div className="h-32 bg-slate-100 flex items-center justify-center text-slate-300 relative overflow-hidden shrink-0">
+                            {p.imageUrl ? (
+                              <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <Box className="w-12 h-12" />
+                            )}
                           </div>
                           <CardContent className="p-4">
                             <div className="flex justify-between items-start mb-2">
@@ -462,13 +491,44 @@ export default function Dashboard() {
                 <Card className="rounded-2xl border-slate-200 shadow-sm">
                   <CardContent className="p-6">
                     <form onSubmit={handleAddProduct} className="space-y-4">
+                      <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:border-brand-orange-300 transition-colors bg-slate-50 relative overflow-hidden">
+                        {productImg ? (
+                          <div className="space-y-4">
+                            <img src={productImg} alt="Preview" className="h-32 object-contain mx-auto rounded-lg shadow-sm" />
+                            <Button type="button" variant="outline" size="sm" onClick={() => setProductImg(null)}>Remove Image</Button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 mb-3">
+                              <Box className="w-6 h-6" />
+                            </div>
+                            <h4 className="font-bold text-slate-700">Upload Product Photo</h4>
+                            <p className="text-xs text-slate-500 mt-1 max-w-xs">Upload a clear photo. AI will automatically generate the name, category, and description.</p>
+                            <input 
+                              type="file" 
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                          </>
+                        )}
+                      </div>
+                      
+                      <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 font-medium border border-blue-200 flex gap-3">
+                        <span className="text-xl">✨</span>
+                        <div>
+                          <strong>AI Smart Assistant</strong><br />
+                          Leave name and description empty to let our AI automatically detect the product and fill them in based on the photo!
+                        </div>
+                      </div>
+
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Product Name</label>
-                        <Input name="name" required placeholder="e.g. Cement M500, 50kg" className="bg-slate-50" />
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Product Name (Optional if photo is attached)</label>
+                        <Input name="name" placeholder="e.g. Cement M500, 50kg" className="bg-slate-50" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
-                        <Input name="description" required placeholder="Detailed description of the material" className="bg-slate-50" />
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description (Optional)</label>
+                        <Input name="description" placeholder="Detailed description of the material" className="bg-slate-50" />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -480,11 +540,8 @@ export default function Dashboard() {
                           <Input name="stock" type="number" min="0" required placeholder="100" className="bg-slate-50" />
                         </div>
                       </div>
-                      <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 font-medium border border-blue-200">
-                        ✨ <b>AI Assistant:</b> Product category and tags will be automatically determined by Gemini AI based on the product name and description you provide.
-                      </div>
                       <Button type="submit" disabled={addingProduct} className="w-full mt-4 bg-brand-orange-500 hover:bg-brand-orange-600 text-white h-12 text-sm font-bold">
-                        {addingProduct ? 'Categorizing and Adding...' : 'Add Auto-Categorized Product'}
+                        {addingProduct ? 'Adding & Categorizing...' : 'Add Auto-Categorized Product'}
                       </Button>
                     </form>
                   </CardContent>

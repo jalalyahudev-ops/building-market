@@ -17,28 +17,54 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // API routes
   app.post("/api/categorize-product", async (req, res) => {
     try {
-      const { name, description } = req.body;
-      if (!name) {
-        return res.status(400).json({ error: "Product name is required" });
+      const { name, description, imageBase64 } = req.body;
+      
+      if (!name && !imageBase64) {
+        return res.status(400).json({ error: "Product name or image is required" });
       }
 
-      const prompt = `Based on the product name "${name}" and description "${description || ''}", categorize this product for a construction materials marketplace.
-Return a broad category, a more specific subcategory, and 3-5 relevant string tags for search.
+      let prompt = `Based on the provided details (and image if available), categorize this product for a construction materials marketplace.
+Return a generated name (if a name was not provided or is very short, otherwise use the provided name but improve it if needed), a generated description (if not provided, or enhanced if provided), a broad category, a more specific subcategory, and 3-5 relevant string tags for search.
 Important: Try to map the product to one of our primary categories if appropriate: "Lumber & Composites", "Plumbing & Valves", "Electrical & Wiring", or "Masonry & Cement". If it does not fit these, you can create a new broad category like "Tools", "Safety Equipment", etc.`;
+
+      if (name) prompt += `\n\nProvided Name: "${name}"`;
+      if (description) prompt += `\nProvided Description: "${description}"`;
+
+      const parts: any[] = [{ text: prompt }];
+
+      if (imageBase64) {
+        const mimeType = imageBase64.split(';')[0].split(':')[1];
+        const base64Data = imageBase64.split(',')[1];
+        parts.push({
+          inlineData: {
+            mimeType: mimeType,
+            data: base64Data
+          }
+        });
+      }
 
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
-        contents: prompt,
+        contents: parts,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
             properties: {
+              name: {
+                type: Type.STRING,
+                description: "The product name (generated from image or improved from provided name)"
+              },
+              description: {
+                type: Type.STRING,
+                description: "A detailed product description generated from image or improved from provided description"
+              },
               category: {
                 type: Type.STRING,
                 description: "A broad category (e.g., 'Lumber', 'Plumbing', 'Electrical', 'Tools', 'Masonry')"
@@ -53,7 +79,7 @@ Important: Try to map the product to one of our primary categories if appropriat
                 description: "An array of 3-5 relevant string tags for search"
               }
             },
-            required: ["category"]
+            required: ["name", "description", "category"]
           }
         }
       });

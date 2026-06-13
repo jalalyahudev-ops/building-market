@@ -150,8 +150,12 @@ export default function Marketplace() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredProducts.map(p => (
             <Card key={p.id} onClick={() => openProductDetail(p)} className="rounded-2xl border-slate-200 shadow-sm overflow-hidden flex flex-col cursor-pointer hover:shadow-md transition-shadow">
-              <div className="h-48 bg-slate-100 flex items-center justify-center text-slate-300 relative">
-                <Box className="w-16 h-16" />
+              <div className="h-48 bg-slate-100 flex items-center justify-center text-slate-300 relative overflow-hidden">
+                {p.imageUrl ? (
+                  <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Box className="w-16 h-16" />
+                )}
                 <span className="absolute top-2 left-2 text-[10px] uppercase font-bold tracking-widest text-slate-500 bg-white px-2 py-1 rounded-md shadow-sm">
                   {p.category}
                 </span>
@@ -191,8 +195,12 @@ export default function Marketplace() {
             
             <div className="overflow-y-auto p-6 space-y-8 flex-1">
               <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-full md:w-1/3 h-48 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300 shrink-0 border border-slate-200">
-                  <Box className="w-16 h-16" />
+                <div className="w-full md:w-1/3 h-48 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-300 shrink-0 border border-slate-200 overflow-hidden">
+                  {selectedProduct.imageUrl ? (
+                    <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Box className="w-16 h-16" />
+                  )}
                 </div>
                 <div className="flex-1 space-y-4">
                   <div>

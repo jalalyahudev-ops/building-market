@@ -35,7 +35,7 @@ export default function Login() {
       await fetchProfile(fbUser.uid);
     } catch (e: any) {
       console.error(e);
-      alert('Ошибка при создании профиля: ' + e.message);
+      alert(t('error.default') + e.message);
     } finally {
       setCreatingProfile(false);
     }
@@ -104,7 +104,7 @@ export default function Login() {
                   <ShoppingBag className="w-10 h-10" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-800 mb-2">{t('role.buyer')}</h3>
-                <p className="text-sm text-slate-500 mb-6">Я хочу находить и покупать строительные материалы по лучшим ценам.</p>
+                <p className="text-sm text-slate-500 mb-6">{t('role.buyer.desc')}</p>
                 <Button className="w-full mt-auto" disabled={loading || creatingProfile}>{t('btn.select')}</Button>
               </div>
 
@@ -116,7 +116,7 @@ export default function Login() {
                   <Briefcase className="w-10 h-10" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-800 mb-2">{t('role.seller')}</h3>
-                <p className="text-sm text-slate-500 mb-6">Я хочу открыть магазин и продавать стройматериалы на платформе.</p>
+                <p className="text-sm text-slate-500 mb-6">{t('role.seller.desc')}</p>
                 <Button className="w-full mt-auto bg-brand-orange-500 hover:bg-brand-orange-600 border-none" disabled={loading || creatingProfile}>{t('btn.select')}</Button>
               </div>
 
@@ -128,7 +128,7 @@ export default function Login() {
                   <ShieldCheck className="w-10 h-10" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-800 mb-2">{t('role.admin')}</h3>
-                <p className="text-sm text-slate-500 mb-6">Управление платформой, контроль пользователей и заказов.</p>
+                <p className="text-sm text-slate-500 mb-6">{t('role.admin.desc')}</p>
                 <Button className="w-full mt-auto bg-purple-500 hover:bg-purple-600 border-none" disabled={loading || creatingProfile}>{t('btn.select')}</Button>
               </div>
             </div>

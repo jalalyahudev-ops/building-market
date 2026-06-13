@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/auth';
 import { useAIStore } from '../store/ai';
+import { useLangStore } from '../store/lang';
 import { Navigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -13,6 +14,7 @@ import { db } from '../lib/firebase';
 import { Input } from '../components/ui/input';
 
 export default function Dashboard() {
+  const { t } = useLangStore();
   const user = useAuthStore((state: any) => state.user);
   const [store, setStore] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -268,8 +270,8 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Welcome back, {user.displayName}</h2>
-          <p className="text-sm text-slate-500 font-medium">Account Type: <span className="uppercase text-brand-orange-500 font-bold">{user.role}</span></p>
+          <h2 className="text-2xl font-bold text-slate-800">{t('dashboard.overview.welcome')} {user.displayName}</h2>
+          <p className="text-sm text-slate-500 font-medium">{t('dashboard.overview.account_type')} <span className="uppercase text-brand-orange-500 font-bold">{t(`role.${user.role}`)}</span></p>
         </div>
       </div>
 
@@ -278,46 +280,46 @@ export default function Dashboard() {
           <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-800 mb-4">
             <Settings className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-slate-800 mb-1">Profile Settings</h3>
-          <p className="text-xs text-slate-500">Manage your personal information, address, and security.</p>
+          <h3 className="font-bold text-slate-800 mb-1">{t('dashboard.overview.profile_settings')}</h3>
+          <p className="text-xs text-slate-500">{t('dashboard.overview.profile_desc')}</p>
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:border-brand-orange-200 transition-all cursor-pointer">
           <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-800 mb-4">
             <ShoppingBag className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-slate-800 mb-1">My Orders</h3>
-          <p className="text-xs text-slate-500">View and track your previous and active material orders.</p>
+          <h3 className="font-bold text-slate-800 mb-1">{t('dashboard.overview.my_orders')}</h3>
+          <p className="text-xs text-slate-500">{t('dashboard.overview.my_orders_desc')}</p>
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:border-brand-orange-200 transition-all cursor-pointer" onClick={() => setActiveTab('store')}>
           <div className="w-12 h-12 bg-brand-orange-50 rounded-xl flex items-center justify-center text-brand-orange-500 mb-4">
             <Store className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-slate-800 mb-1">Store Dashboard</h3>
-          <p className="text-xs text-slate-500">{store ? "Manage your store inventory and view sales." : "Register a store to start selling."}</p>
+          <h3 className="font-bold text-slate-800 mb-1">{t('dashboard.overview.store_dashboard')}</h3>
+          <p className="text-xs text-slate-500">{store ? t('dashboard.overview.store_desc_has') : t('dashboard.overview.store_desc_none')}</p>
         </div>
       </div>
 
       {store && store.status === 'approved' && (
         <div className="mt-8">
-          <h3 className="text-lg font-bold text-slate-800 mb-4">Store Overview</h3>
+          <h3 className="text-lg font-bold text-slate-800 mb-4">{t('dashboard.stats.title')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-brand-blue-900 p-6 rounded-2xl text-white">
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">Total Sales</p>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">{t('dashboard.stats.total_sales')}</p>
               <p className="text-3xl font-black">0 ₽</p>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">Products</p>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">{t('dashboard.stats.products')}</p>
               <p className="text-3xl font-black text-slate-800">0</p>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">Active Orders</p>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">{t('dashboard.stats.active_orders')}</p>
               <p className="text-3xl font-black text-slate-800">0</p>
             </div>
-            <div className="bg-[#F97316] bg-opacity-10 p-6 rounded-2xl border border-[#F97316] border-opacity-20 flex flex-col justify-center items-center cursor-pointer hover:bg-opacity-20 transition-all">
+            <div className="bg-[#F97316] bg-opacity-10 p-6 rounded-2xl border border-[#F97316] border-opacity-20 flex flex-col justify-center items-center cursor-pointer hover:bg-opacity-20 transition-all cursor-pointer" onClick={() => setActiveTab('add-product')}>
               <Plus className="w-8 h-8 text-brand-orange-500 mb-2" />
-              <p className="text-xs font-bold text-brand-orange-600">New Product</p>
+              <p className="text-xs font-bold text-brand-orange-600">{t('dashboard.stats.new_product')}</p>
             </div>
           </div>
         </div>
@@ -339,7 +341,7 @@ export default function Dashboard() {
           </div>
           <div>
             <h3 className="font-bold text-slate-800 text-sm line-clamp-1">{user.displayName}</h3>
-            <span className="text-[10px] bg-brand-orange-100 text-brand-orange-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{user.role}</span>
+            <span className="text-[10px] bg-brand-orange-100 text-brand-orange-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{t(`role.${user.role}`)}</span>
           </div>
         </div>
 
@@ -348,26 +350,26 @@ export default function Dashboard() {
             onClick={() => setActiveTab('overview')}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === 'overview' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'}`}
           >
-            <TrendingUp className="w-4 h-4" /> Overview
+            <TrendingUp className="w-4 h-4" /> {t('dashboard.menu.overview')}
           </button>
           <button 
             onClick={() => setActiveTab('profile')}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === 'profile' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'}`}
           >
-            <Settings className="w-4 h-4" /> Profile Settings
+            <Settings className="w-4 h-4" /> {t('dashboard.menu.profile')}
           </button>
           <button 
             onClick={() => setActiveTab('orders')}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === 'orders' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'}`}
           >
-            <ShoppingBag className="w-4 h-4" /> My Orders
+            <ShoppingBag className="w-4 h-4" /> {t('dashboard.menu.orders')}
           </button>
           <div className="pt-4 mt-4 border-t border-slate-200">
             <button 
               onClick={() => setActiveTab('store')}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === 'store' ? 'bg-brand-orange-500 text-white' : 'text-brand-orange-600 bg-orange-50 hover:bg-orange-100'}`}
             >
-              <Store className="w-4 h-4" /> Store Dashboard
+              <Store className="w-4 h-4" /> {t('dashboard.menu.store')}
             </button>
             {store && (
               <>
@@ -375,13 +377,13 @@ export default function Dashboard() {
                   onClick={() => setActiveTab('store-orders')}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === 'store-orders' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'} mt-2 w-full`}
                 >
-                  <Package className="w-4 h-4" /> Customer Orders
+                  <Package className="w-4 h-4" /> {t('dashboard.menu.customer_orders')}
                 </button>
                 <button 
                   onClick={() => setActiveTab('store-settings')}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === 'store-settings' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'} mt-2 w-full`}
                 >
-                  <Settings className="w-4 h-4" /> Store Settings
+                  <Settings className="w-4 h-4" /> {t('dashboard.menu.store_settings')}
                 </button>
               </>
             )}
@@ -391,7 +393,7 @@ export default function Dashboard() {
               onClick={() => setActiveTab('admin')}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors mt-2 ${activeTab === 'admin' ? 'bg-red-600 text-white' : 'text-red-600 bg-red-50 hover:bg-red-100'}`}
             >
-              <FileText className="w-4 h-4" /> Admin Panel
+              <FileText className="w-4 h-4" /> {t('dashboard.menu.admin_panel')}
             </button>
           )}
         </nav>
@@ -403,19 +405,19 @@ export default function Dashboard() {
 
         {activeTab === 'profile' && (
           <div className="space-y-6 max-w-2xl">
-            <h2 className="text-2xl font-bold text-slate-800">Profile Settings</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{t('profile.settings.title')}</h2>
             <Card className="rounded-2xl border-slate-200 shadow-sm">
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Display Name</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('profile.settings.label.name')}</label>
                   <Input defaultValue={user.displayName || ''} className="bg-slate-50" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('profile.settings.label.email')}</label>
                   <Input defaultValue={user.email || ''} disabled className="bg-slate-100 text-slate-500" />
-                  <p className="text-[10px] text-slate-400 mt-1">Email is managed by your authentication provider.</p>
+                  <p className="text-[10px] text-slate-400 mt-1">{t('profile.settings.email_desc')}</p>
                 </div>
-                <Button className="mt-4 bg-slate-800 text-white hover:bg-slate-700">Save Changes</Button>
+                <Button className="mt-4 bg-slate-800 text-white hover:bg-slate-700">{t('profile.settings.btn.save')}</Button>
               </CardContent>
             </Card>
           </div>
@@ -423,10 +425,10 @@ export default function Dashboard() {
 
         {activeTab === 'store' && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-slate-800">Store Dashboard</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{t('store.dashboard.title')}</h2>
             
             {loading ? (
-              <div className="text-slate-500 font-medium">Loading store information...</div>
+              <div className="text-slate-500 font-medium">{t('store.dashboard.loading')}</div>
             ) : store ? (
               <div className="space-y-6">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
@@ -438,13 +440,13 @@ export default function Dashboard() {
                       <h3 className="font-bold text-xl text-slate-800">{store.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`w-2 h-2 rounded-full ${store.status === 'approved' ? 'bg-green-500' : 'bg-amber-500'}`}></span>
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{store.status === 'approved' ? 'Live on Market' : 'Pending Approval'}</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{store.status === 'approved' ? t('store.dashboard.status.live') : t('store.dashboard.status.pending')}</span>
                       </div>
                     </div>
                   </div>
                   {store.status === 'approved' && (
                     <Button onClick={() => setActiveTab('add-product')} className="bg-brand-orange-500 hover:bg-brand-orange-600 text-white">
-                      <Plus className="w-4 h-4 mr-2" /> Add Material
+                      <Plus className="w-4 h-4 mr-2" /> {t('store.dashboard.btn.add_material')}
                     </Button>
                   )}
                 </div>
@@ -457,10 +459,10 @@ export default function Dashboard() {
                           <Package className="w-8 h-8" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-slate-800">Your inventory is empty</h4>
-                          <p className="text-sm text-slate-500 mt-1">Add your first construction material to start selling.</p>
+                          <h4 className="font-bold text-slate-800">{t('store.dashboard.empty.title')}</h4>
+                          <p className="text-sm text-slate-500 mt-1">{t('store.dashboard.empty.desc')}</p>
                         </div>
-                        <Button variant="outline" onClick={() => setActiveTab('add-product')} className="mt-4">Import Catalog</Button>
+                        <Button variant="outline" onClick={() => setActiveTab('add-product')} className="mt-4">{t('store.dashboard.empty.btn')}</Button>
                       </CardContent>
                     </Card>
                   ) : (
@@ -481,7 +483,7 @@ export default function Dashboard() {
                             </div>
                             <p className="text-xs text-slate-500 mb-3 line-clamp-2">{p.description}</p>
                             <div className="flex items-center justify-between mt-auto">
-                              <span className="text-xs font-medium text-slate-500">Stock: {p.stock}</span>
+                              <span className="text-xs font-medium text-slate-500">{t('store.dashboard.stock')} {p.stock}</span>
                               <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded-md">{p.category}</span>
                             </div>
                           </CardContent>
@@ -491,41 +493,41 @@ export default function Dashboard() {
                   )
                 ) : (
                   <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl text-amber-800">
-                    <h4 className="font-bold mb-2">Store under review</h4>
-                    <p className="text-sm">Our trust and safety team is reviewing your store information. You will be notified once your store is approved and ready to accept orders.</p>
+                    <h4 className="font-bold mb-2">{t('store.dashboard.under_review.title')}</h4>
+                    <p className="text-sm">{t('store.dashboard.under_review.desc')}</p>
                   </div>
                 )}
               </div>
             ) : (
               <div className="max-w-2xl space-y-6">
                 <div className="bg-slate-800 text-white p-6 rounded-2xl shadow-sm">
-                  <h3 className="font-bold text-lg mb-2">Become a Seller</h3>
-                  <p className="text-sm text-slate-300">Join hundreds of suppliers on BuildMarket. Complete your registration to list your materials and reach more buyers.</p>
+                  <h3 className="font-bold text-lg mb-2">{t('store.register.title')}</h3>
+                  <p className="text-sm text-slate-300">{t('store.register.desc')}</p>
                 </div>
                 
                 <Card className="rounded-2xl border-slate-200 shadow-sm">
                   <CardContent className="p-6">
                     <form onSubmit={handleRegisterStore} className="space-y-4">
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Store Name</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.register.label.name')}</label>
                         <Input name="name" required placeholder="e.g. Iron & Steel Pro" className="bg-slate-50" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.register.label.desc')}</label>
                         <Input name="description" required placeholder="Short description of your supply" className="bg-slate-50" />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Address</label>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.register.label.address')}</label>
                           <Input name="address" required placeholder="Storage Location" className="bg-slate-50" />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Phone</label>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.register.label.phone')}</label>
                           <Input name="phone" required placeholder="Contact Number" className="bg-slate-50" />
                         </div>
                       </div>
                       <Button type="submit" className="w-full mt-2 bg-brand-orange-500 hover:bg-brand-orange-600 text-white h-12 text-sm font-bold">
-                        Submit Store Application
+                        {t('store.register.btn.submit')}
                       </Button>
                     </form>
                   </CardContent>
@@ -539,8 +541,8 @@ export default function Dashboard() {
         {activeTab === 'add-product' && store && (
               <div className="space-y-6 max-w-2xl">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-slate-800">Add New Product</h2>
-                  <Button variant="outline" onClick={() => setActiveTab('store')}>Back to Inventory</Button>
+                  <h2 className="text-2xl font-bold text-slate-800">{t('store.product.add.title')}</h2>
+                  <Button variant="outline" onClick={() => setActiveTab('store')}>{t('store.product.add.back')}</Button>
                 </div>
                 <Card className="rounded-2xl border-slate-200 shadow-sm">
                   <CardContent className="p-6">
@@ -549,15 +551,15 @@ export default function Dashboard() {
                         {productImg ? (
                           <div className="space-y-4">
                             <img src={productImg} alt="Preview" className="h-32 object-contain mx-auto rounded-lg shadow-sm" />
-                            <Button type="button" variant="outline" size="sm" onClick={() => setProductImg(null)}>Remove Image</Button>
+                            <Button type="button" variant="outline" size="sm" onClick={() => setProductImg(null)}>{t('store.product.add.upload.btn_remove')}</Button>
                           </div>
                         ) : (
                           <>
                             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 mb-3">
                               <Box className="w-6 h-6" />
                             </div>
-                            <h4 className="font-bold text-slate-700">Upload Product Photo</h4>
-                            <p className="text-xs text-slate-500 mt-1 max-w-xs">Upload a clear photo. AI will automatically generate the name, category, and description.</p>
+                            <h4 className="font-bold text-slate-700">{t('store.product.add.upload.title')}</h4>
+                            <p className="text-xs text-slate-500 mt-1 max-w-xs">{t('store.product.add.upload.desc')}</p>
                             <input 
                               type="file" 
                               accept="image/*"
@@ -571,98 +573,98 @@ export default function Dashboard() {
                       <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 font-medium border border-blue-200 flex gap-3">
                         <span className="text-xl">✨</span>
                         <div>
-                          <strong>AI Smart Assistant</strong><br />
-                          Leave name and description empty to let our AI automatically detect the product and fill them in based on the photo!
+                          <strong>{t('store.product.add.ai.title')}</strong><br />
+                          {t('store.product.add.ai.desc')}
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Product Name (Optional if photo is attached)</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.product.add.label.name')}</label>
                         <Input name="name" placeholder="e.g. Cement M500, 50kg" className="bg-slate-50" />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description (Optional)</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.product.add.label.desc')}</label>
                         <Input name="description" placeholder="Detailed description of the material" className="bg-slate-50" />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Price (₽)</label>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.product.add.label.price')}</label>
                           <Input name="price" type="number" min="0" required placeholder="900" className="bg-slate-50" />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Stock / Quantity</label>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.product.add.label.stock')}</label>
                           <Input name="stock" type="number" min="0" required placeholder="100" className="bg-slate-50" />
                         </div>
                       </div>
                       <Button type="submit" disabled={addingProduct} className="w-full mt-4 bg-brand-orange-500 hover:bg-brand-orange-600 text-white h-12 text-sm font-bold">
-                        {addingProduct ? 'Adding & Categorizing...' : 'Add Auto-Categorized Product'}
+                        {addingProduct ? t('store.product.add.btn.adding') : t('store.product.add.btn.add')}
                       </Button>
                     </form>
                   </CardContent>
                 </Card>
               </div>
-            )}
+        )}
 
-            {activeTab === 'orders' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-slate-800">My Orders</h2>
-                <div className="grid gap-4">
-                  {myOrders.length === 0 ? (
-                    <div className="p-6 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">You haven't placed any orders yet.</div>
-                  ) : (
-                    myOrders.map(o => (
-                      <Card key={o.id} className="rounded-2xl border-slate-200 shadow-sm overflow-hidden">
-                        <CardContent className="p-6">
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1">Order #{o.id.substring(0, 8)}</p>
-                              <p className="font-bold text-slate-800 text-lg">{o.totalAmount} ₽</p>
-                            </div>
-                            <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider ${
-                                o.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                o.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                o.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
-                                'bg-red-100 text-red-700'
-                              }`}>{o.status}</span>
+        {activeTab === 'orders' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-slate-800">{t('orders.my.title')}</h2>
+            <div className="grid gap-4">
+              {myOrders.length === 0 ? (
+                <div className="p-6 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">{t('orders.my.empty')}</div>
+              ) : (
+                myOrders.map(o => (
+                  <Card key={o.id} className="rounded-2xl border-slate-200 shadow-sm overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1">{t('orders.my.order_num')}{o.id.substring(0, 8)}</p>
+                          <p className="font-bold text-slate-800 text-lg">{o.totalAmount} ₽</p>
+                        </div>
+                        <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider ${
+                            o.status === 'completed' ? 'bg-green-100 text-green-700' :
+                            o.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                            o.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>{o.status}</span>
+                      </div>
+                      <div className="space-y-2 mb-4">
+                        {o.items?.map((item: any, i: number) => (
+                          <div key={i} className="flex justify-between text-sm">
+                            <span className="text-slate-600">{item.name} x {item.quantity}</span>
+                            <span className="font-medium text-slate-800">{item.price * item.quantity} ₽</span>
                           </div>
-                          <div className="space-y-2 mb-4">
-                            {o.items?.map((item: any, i: number) => (
-                              <div key={i} className="flex justify-between text-sm">
-                                <span className="text-slate-600">{item.name} x {item.quantity}</span>
-                                <span className="font-medium text-slate-800">{item.price * item.quantity} ₽</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => downloadInvoice(o)}>
-                              <Download className="w-4 h-4 mr-2" />
-                              Download Invoice
-                            </Button>
-                            {o.status === 'pending' && (
-                              <Button variant="destructive" size="sm" onClick={() => handleUpdateOrder(o.id, 'cancelled', true)}>Cancel Order</Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => downloadInvoice(o)}>
+                          <Download className="w-4 h-4 mr-2" />
+                          {t('orders.my.download_invoice')}
+                        </Button>
+                        {o.status === 'pending' && (
+                          <Button variant="destructive" size="sm" onClick={() => handleUpdateOrder(o.id, 'cancelled', true)}>{t('orders.my.cancel_order')}</Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
             {activeTab === 'store-orders' && store && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-slate-800">Customer Orders</h2>
+                <h2 className="text-2xl font-bold text-slate-800">{t('orders.customer.title')}</h2>
                 <div className="grid gap-4">
                   {storeOrders.length === 0 ? (
-                    <div className="p-6 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">No incoming orders yet.</div>
+                    <div className="p-6 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">{t('orders.customer.empty')}</div>
                   ) : (
                     storeOrders.map(o => (
                       <Card key={o.id} className="rounded-2xl border-slate-200 shadow-sm overflow-hidden">
                         <CardContent className="p-6">
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1">Order #{o.id.substring(0, 8)}</p>
+                              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1">{t('orders.my.order_num')}{o.id.substring(0, 8)}</p>
                               <p className="font-bold text-slate-800 text-lg">{o.totalAmount} ₽</p>
                             </div>
                             <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider ${
@@ -684,16 +686,16 @@ export default function Dashboard() {
                           <div className="flex flex-wrap gap-2">
                             <Button variant="outline" size="sm" onClick={() => downloadInvoice(o)}>
                               <Download className="w-4 h-4 mr-2" />
-                              Download Invoice
+                              {t('orders.my.download_invoice')}
                             </Button>
                             {o.status === 'pending' && (
-                              <Button size="sm" className="bg-brand-orange-500 hover:bg-brand-orange-600" onClick={() => handleUpdateOrder(o.id, 'accepted', false)}>Accept Order</Button>
+                              <Button size="sm" className="bg-brand-orange-500 hover:bg-brand-orange-600" onClick={() => handleUpdateOrder(o.id, 'accepted', false)}>{t('orders.customer.accept')}</Button>
                             )}
                             {o.status === 'accepted' && (
-                              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleUpdateOrder(o.id, 'completed', false)}>Mark Completed</Button>
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleUpdateOrder(o.id, 'completed', false)}>{t('orders.customer.mark_completed')}</Button>
                             )}
                             {(o.status === 'pending' || o.status === 'accepted') && (
-                              <Button variant="destructive" size="sm" onClick={() => handleUpdateOrder(o.id, 'cancelled', false)}>Cancel</Button>
+                              <Button variant="destructive" size="sm" onClick={() => handleUpdateOrder(o.id, 'cancelled', false)}>{t('orders.customer.cancel')}</Button>
                             )}
                           </div>
                         </CardContent>
@@ -707,18 +709,18 @@ export default function Dashboard() {
             {activeTab === 'admin' && user.role === 'admin' && (
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-800 mb-6">Platform Statistics</h2>
+                  <h2 className="text-2xl font-bold text-slate-800 mb-6">{t('admin.stats.title')}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-brand-blue-900 p-6 rounded-2xl text-white">
-                      <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">Total Stores</p>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2">{t('admin.stats.total_stores')}</p>
                       <p className="text-4xl font-black">{adminStats?.totalStores || 0}</p>
                     </div>
                     <div className="bg-brand-orange-50 p-6 rounded-2xl">
-                      <p className="text-xs text-brand-orange-600/70 font-bold uppercase tracking-widest mb-2">Total Products</p>
+                      <p className="text-xs text-brand-orange-600/70 font-bold uppercase tracking-widest mb-2">{t('admin.stats.total_products')}</p>
                       <p className="text-4xl font-black text-brand-orange-600">{adminStats?.totalProducts || 0}</p>
                     </div>
                     <div className="bg-green-50 p-6 rounded-2xl">
-                      <p className="text-xs text-green-700/70 font-bold uppercase tracking-widest mb-2">Total Orders</p>
+                      <p className="text-xs text-green-700/70 font-bold uppercase tracking-widest mb-2">{t('admin.stats.total_orders')}</p>
                       <p className="text-4xl font-black text-green-700">{adminStats?.totalOrders || 0}</p>
                     </div>
                   </div>
@@ -726,26 +728,26 @@ export default function Dashboard() {
 
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold text-slate-800">Global Categories</h2>
-                    <Button variant="outline" size="sm">Add Category</Button>
+                    <h2 className="text-2xl font-bold text-slate-800">{t('admin.categories.title')}</h2>
+                    <Button variant="outline" size="sm">{t('admin.categories.add')}</Button>
                   </div>
                   <Card className="rounded-2xl border-slate-200">
                     <CardContent className="p-0">
                        <ul className="divide-y divide-slate-100">
-                         <li className="p-4 flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Lumber & Composites</span><Button variant="ghost" size="sm">Edit</Button></li>
-                         <li className="p-4 flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Plumbing & Valves</span><Button variant="ghost" size="sm">Edit</Button></li>
-                         <li className="p-4 flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Electrical & Wiring</span><Button variant="ghost" size="sm">Edit</Button></li>
-                         <li className="p-4 flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Masonry & Cement</span><Button variant="ghost" size="sm">Edit</Button></li>
+                         <li className="p-4 flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Lumber & Composites</span><Button variant="ghost" size="sm">{t('admin.categories.edit')}</Button></li>
+                         <li className="p-4 flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Plumbing & Valves</span><Button variant="ghost" size="sm">{t('admin.categories.edit')}</Button></li>
+                         <li className="p-4 flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Electrical & Wiring</span><Button variant="ghost" size="sm">{t('admin.categories.edit')}</Button></li>
+                         <li className="p-4 flex justify-between items-center text-sm"><span className="font-medium text-slate-700">Masonry & Cement</span><Button variant="ghost" size="sm">{t('admin.categories.edit')}</Button></li>
                        </ul>
                     </CardContent>
                   </Card>
                 </div>
 
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-800 mb-4">Store Applications</h2>
+                  <h2 className="text-2xl font-bold text-slate-800 mb-4">{t('admin.applications.title')}</h2>
                   <div className="grid gap-4">
                     {adminStores.length === 0 ? (
-                      <div className="p-6 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">No stores found</div>
+                      <div className="p-6 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">{t('admin.applications.empty')}</div>
                     ) : (
                       adminStores.map(s => (
                         <div key={s.id} className="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
@@ -764,12 +766,12 @@ export default function Dashboard() {
                           <div className="flex gap-2">
                             {s.status === 'pending' && (
                               <>
-                                <Button size="sm" onClick={() => handleApproveStore(s.id, 'approved')} className="bg-green-600 hover:bg-green-700 text-white">Approve</Button>
-                                <Button size="sm" onClick={() => handleApproveStore(s.id, 'rejected')} variant="destructive">Reject</Button>
+                                <Button size="sm" onClick={() => handleApproveStore(s.id, 'approved')} className="bg-green-600 hover:bg-green-700 text-white">{t('admin.applications.approve')}</Button>
+                                <Button size="sm" onClick={() => handleApproveStore(s.id, 'rejected')} variant="destructive">{t('admin.applications.reject')}</Button>
                               </>
                             )}
                             {s.status === 'approved' && (
-                              <Button size="sm" onClick={() => handleApproveStore(s.id, 'rejected')} variant="destructive">Revoke</Button>
+                              <Button size="sm" onClick={() => handleApproveStore(s.id, 'rejected')} variant="destructive">{t('admin.applications.revoke')}</Button>
                             )}
                           </div>
                         </div>
@@ -781,34 +783,34 @@ export default function Dashboard() {
             )}
         {activeTab === 'store-settings' && store && (
           <div className="space-y-6 max-w-2xl">
-            <h2 className="text-2xl font-bold text-slate-800">Store Settings</h2>
+            <h2 className="text-2xl font-bold text-slate-800">{t('store.settings.title')}</h2>
             <Card className="rounded-2xl border-slate-200 shadow-sm">
               <CardContent className="p-6">
                 <form onSubmit={handleUpdateStore} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Store Name</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.register.label.name')}</label>
                     <Input name="name" defaultValue={store.name} required className="bg-slate-50" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.register.label.desc')}</label>
                     <Input name="description" defaultValue={store.description} required className="bg-slate-50" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Address</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.register.label.address')}</label>
                       <Input name="address" defaultValue={store.address} required className="bg-slate-50" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Phone</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.register.label.phone')}</label>
                       <Input name="phone" defaultValue={store.phone} required className="bg-slate-50" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Operating Hours</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('store.settings.label.hours')}</label>
                     <Input name="operatingHours" defaultValue={store.operatingHours || ''} placeholder="e.g. Mon-Fri: 9 AM - 6 PM" className="bg-slate-50" />
                   </div>
                   <Button type="submit" className="w-full mt-4 bg-slate-800 text-white hover:bg-slate-700 h-12 text-sm font-bold">
-                    Save Updates
+                    {t('store.settings.btn.save')}
                   </Button>
                 </form>
               </CardContent>

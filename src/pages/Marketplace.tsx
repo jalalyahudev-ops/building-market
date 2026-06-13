@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/auth';
 import { useAIStore } from '../store/ai';
 import { useCartStore } from '../store/cart';
+import { useLangStore } from '../store/lang';
 import { collection, query, where, getDocs, doc, setDoc, addDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Card, CardContent } from '../components/ui/card';
@@ -11,6 +12,7 @@ import { Search, ShoppingCart, MessageSquare, Box, Star, X } from 'lucide-react'
 import { Link } from 'react-router-dom';
 
 export default function Marketplace() {
+  const { lang } = useLangStore();
   const user = useAuthStore((state: any) => state.user);
   const addItem = useCartStore((state) => state.addItem);
   const [products, setProducts] = useState<any[]>([]);
@@ -20,7 +22,7 @@ export default function Marketplace() {
   // AI Assistant Chat state
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<{role: string, text: string}[]>([
-    { role: 'model', text: 'Hello! I am your AI Shopping Assistant. Looking for specific construction materials, or need advice on what to buy for your project?' }
+    { role: 'model', text: lang === 'uz' ? 'Salom! Men sizning sun\'iy intellekt yordamchingizman. Nimadir qidiryapsizmi yoki maslahat kerakmi?' : 'Здравствуйте! Я ваш ИИ-помощник. Ищете определенные материалы или нужен совет по строительству?' }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -131,12 +133,12 @@ export default function Marketplace() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black text-slate-800">BuildMarket</h1>
-          <p className="text-slate-500">Find and buy quality construction materials.</p>
+          <p className="text-slate-500">{lang === 'uz' ? 'Sifatli qurilish materiallarini toping va xarid qiling.' : 'Находите и покупайте качественные строительные материалы.'}</p>
         </div>
         <div className="relative w-full md:w-96">
           <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input 
-            placeholder="Search products or categories..." 
+            placeholder={lang === 'uz' ? 'Mahsulot yoki kategoriyalarni qidirish...' : 'Поиск товаров или категорий...'} 
             className="pl-10 bg-white"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -145,7 +147,7 @@ export default function Marketplace() {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-slate-500 font-medium">Loading products...</div>
+        <div className="text-center py-20 text-slate-500 font-medium">{lang === 'uz' ? 'Yuklanmoqda...' : 'Загрузка...'}</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredProducts.map(p => (
@@ -168,7 +170,7 @@ export default function Marketplace() {
                 <p className="text-sm text-slate-500 mb-4 line-clamp-2 flex-1">{p.description}</p>
                 
                 <Button onClick={(e) => { e.stopPropagation(); handleAddToCart(p); }} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold h-10">
-                  <ShoppingCart className="w-4 h-4 mr-2" /> Add to Cart
+                  <ShoppingCart className="w-4 h-4 mr-2" /> {lang === 'uz' ? 'Savatchaga' : 'В корзину'}
                 </Button>
               </CardContent>
             </Card>
@@ -176,7 +178,7 @@ export default function Marketplace() {
           
           {filteredProducts.length === 0 && (
             <div className="col-span-full text-center py-20 text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl">
-              No products found matching "{search}"
+              {lang === 'uz' ? `"${search}" bo'yicha hech narsa topilmadi` : `Товаров по запросу "${search}" не найдено`}
             </div>
           )}
         </div>
@@ -213,7 +215,7 @@ export default function Marketplace() {
                   
                   <div className="pt-4 border-t border-slate-100">
                     <Button onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); }} className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold h-12 px-8">
-                      <ShoppingCart className="w-5 h-5 mr-2" /> Add to Cart
+                      <ShoppingCart className="w-5 h-5 mr-2" /> {lang === 'uz' ? 'Savatchaga qo\'shish' : 'Добавить в корзину'}
                     </Button>
                   </div>
                 </div>

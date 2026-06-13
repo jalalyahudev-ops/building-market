@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCartStore } from '../store/cart';
 import { useAuthStore } from '../store/auth';
+import { useLangStore } from '../store/lang';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -11,6 +12,7 @@ import { db } from '../lib/firebase';
 export default function Cart() {
   const { items, removeItem, updateQuantity, clearCart, getTotal } = useCartStore();
   const user = useAuthStore((state: any) => state.user);
+  const { t } = useLangStore();
   const navigate = useNavigate();
   
   const [checkingOut, setCheckingOut] = useState(false);
@@ -62,11 +64,11 @@ export default function Cart() {
         <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 className="w-12 h-12" />
         </div>
-        <h1 className="text-4xl font-black text-slate-800">Order Successful!</h1>
-        <p className="text-lg text-slate-500">Your mock order has been placed securely. We'll simulate delivery shortly.</p>
+        <h1 className="text-4xl font-black text-slate-800">{t('cart.success.title')}</h1>
+        <p className="text-lg text-slate-500">{t('cart.success.desc')}</p>
         <div className="pt-8">
           <Button onClick={() => navigate('/marketplace')} className="bg-brand-orange-500 hover:bg-brand-orange-600">
-            Continue Shopping
+            {t('cart.success.btn')}
           </Button>
         </div>
       </div>
@@ -79,12 +81,12 @@ export default function Cart() {
         <div className="w-24 h-24 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-4">
           <Box className="w-10 h-10" />
         </div>
-        <h1 className="text-3xl font-black text-slate-800">Your Cart is Empty</h1>
-        <p className="text-slate-500">Looks like you haven't added any construction materials yet.</p>
+        <h1 className="text-3xl font-black text-slate-800">{t('cart.empty.title')}</h1>
+        <p className="text-slate-500">{t('cart.empty.desc')}</p>
         <div className="pt-4">
           <Link to="/marketplace">
             <Button className="bg-brand-orange-500 hover:bg-brand-orange-600 text-white font-bold h-12 px-8">
-              Browse Marketplace
+              {t('cart.empty.btn')}
             </Button>
           </Link>
         </div>
@@ -98,7 +100,7 @@ export default function Cart() {
         <Link to="/marketplace" className="text-slate-400 hover:text-slate-800 transition-colors">
           <ArrowLeft className="w-6 h-6" />
         </Link>
-        <h1 className="text-3xl font-black text-slate-800">Shopping Cart</h1>
+        <h1 className="text-3xl font-black text-slate-800">{t('cart.title')}</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -153,23 +155,23 @@ export default function Cart() {
         <div className="lg:col-span-1">
           <Card className="rounded-2xl border-slate-200 shadow-sm sticky top-24">
             <CardContent className="p-6">
-              <h3 className="text-xl font-bold text-slate-800 mb-6">Order Summary</h3>
+              <h3 className="text-xl font-bold text-slate-800 mb-6">{t('cart.summary.title')}</h3>
               
               <div className="space-y-4 text-sm text-slate-600 mb-6">
                 <div className="flex justify-between">
-                  <span>Subtotal ({items.reduce((acc, item) => acc + item.quantity, 0)} items)</span>
+                  <span>{t('cart.summary.subtotal')} ({items.reduce((acc, item) => acc + item.quantity, 0)} {t('cart.summary.items')})</span>
                   <span className="font-medium text-slate-800">{getTotal()} ₽</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Estimated Tax</span>
+                  <span>{t('cart.summary.tax')}</span>
                   <span className="font-medium text-slate-800">{(getTotal() * 0.1).toFixed(0)} ₽</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span className="text-green-600 font-medium">Calculated at checkout</span>
+                  <span>{t('cart.summary.shipping')}</span>
+                  <span className="text-green-600 font-medium">{t('cart.summary.shipping_calc')}</span>
                 </div>
                 <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
-                  <span className="font-bold text-lg text-slate-800">Total</span>
+                  <span className="font-bold text-lg text-slate-800">{t('cart.summary.total')}</span>
                   <span className="font-black text-2xl text-brand-orange-600">{(getTotal() * 1.1).toFixed(0)} ₽</span>
                 </div>
               </div>
@@ -179,7 +181,7 @@ export default function Cart() {
                 onClick={handleCheckout}
                 disabled={checkingOut}
               >
-                {checkingOut ? 'Processing...' : 'Proceed to Checkout'}
+                {checkingOut ? t('cart.btn.processing') : t('cart.btn.checkout')}
               </Button>
             </CardContent>
           </Card>

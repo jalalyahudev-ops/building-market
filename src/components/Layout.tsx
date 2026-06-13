@@ -31,7 +31,7 @@ export function Layout() {
             <div className="relative w-full flex border-2 border-brand-blue-500 rounded-lg overflow-hidden focus-within:border-brand-orange-500 transition-colors bg-brand-blue-900">
               <input
                 type="text"
-                placeholder="Поиск товаров и магазинов..."
+                placeholder={lang === 'uz' ? 'Mahsulotlar va do\'konlarni qidirish...' : 'Поиск товаров и магазинов...'}
                 className="w-full bg-transparent py-2 px-4 text-white placeholder:text-slate-400 focus:outline-none"
               />
             </div>

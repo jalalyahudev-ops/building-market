@@ -7,24 +7,27 @@ import { Input } from '../components/ui/input';
 import { HardHat, Hammer, Zap, Droplets, Sparkles, Send, CheckCircle2, User, Loader2, Paintbrush, Pickaxe, Download } from 'lucide-react';
 
 import { useAIStore } from '../store/ai';
-
-const CATEGORIES = [
-  { id: 'грузчики', name: 'Грузчики', icon: User, hourlyRate: 35000 },
-  { id: 'строители', name: 'Строители', icon: HardHat, hourlyRate: 60000 },
-  { id: 'маляры', name: 'Маляры', icon: Paintbrush, hourlyRate: 50000 },
-  { id: 'бетонщики', name: 'Бетонщики', icon: Pickaxe, hourlyRate: 65000 },
-  { id: 'электрики', name: 'Электрики', icon: Zap, hourlyRate: 80000 },
-  { id: 'сантехники', name: 'Сантехники', icon: Droplets, hourlyRate: 75000 },
-  { id: 'уборка', name: 'Уборка', icon: Sparkles, hourlyRate: 40000 },
-];
-
-const PAYMENT_METHODS = [
-  { id: 'cash', name: 'Наличный расчет (Нал)' },
-  { id: 'transfer', name: 'Перечисление' },
-  { id: 'installments', name: 'В рассрочку (Насия)' }
-];
+import { useLangStore } from '../store/lang';
 
 export default function Workers() {
+  const { t } = useLangStore();
+
+  const CATEGORIES = [
+    { id: 'loaders', name: t('workers.categories.loaders'), icon: User, hourlyRate: 35000 },
+    { id: 'builders', name: t('workers.categories.builders'), icon: HardHat, hourlyRate: 60000 },
+    { id: 'painters', name: t('workers.categories.painters'), icon: Paintbrush, hourlyRate: 50000 },
+    { id: 'concrete', name: t('workers.categories.concrete'), icon: Pickaxe, hourlyRate: 65000 },
+    { id: 'electricians', name: t('workers.categories.electricians'), icon: Zap, hourlyRate: 80000 },
+    { id: 'plumbers', name: t('workers.categories.plumbers'), icon: Droplets, hourlyRate: 75000 },
+    { id: 'cleaning', name: t('workers.categories.cleaning'), icon: Sparkles, hourlyRate: 40000 },
+  ];
+
+  const PAYMENT_METHODS = [
+    { id: 'cash', name: t('workers.payment.cash') },
+    { id: 'transfer', name: t('workers.payment.transfer') },
+    { id: 'installments', name: t('workers.payment.installments') }
+  ];
+
   const [activeTab, setActiveTab] = useState<'search' | 'register'>('search');
   const [prompt, setPrompt] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -61,7 +64,7 @@ export default function Workers() {
         status: 'found_workers'
       });
     } catch (err) {
-      alert("Ошибка при обработке запроса: " + err);
+      alert(t('workers.error') + err);
     } finally {
       setIsProcessing(false);
     }
@@ -141,8 +144,8 @@ export default function Workers() {
     <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-800">Услуги и Мастера</h1>
-          <p className="text-slate-500 mt-2 font-medium">Найдите специалистов и материалы или станьте мастером</p>
+          <h1 className="text-3xl font-black tracking-tight text-slate-800">{t('workers.title')}</h1>
+          <p className="text-slate-500 mt-2 font-medium">{t('workers.desc')}</p>
         </div>
       </div>
 
@@ -151,14 +154,14 @@ export default function Workers() {
           onClick={() => setActiveTab('search')}
           className={`pb-3 px-4 font-bold text-sm tracking-wide transition-colors relative ${activeTab === 'search' ? 'text-brand-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
         >
-          ПОИСК МАСТЕРОВ
+          {t('workers.tab.search')}
           {activeTab === 'search' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-blue-600 rounded-t-full"></div>}
         </button>
         <button 
           onClick={() => setActiveTab('register')}
           className={`pb-3 px-4 font-bold text-sm tracking-wide transition-colors relative ${activeTab === 'register' ? 'text-brand-orange-500' : 'text-slate-500 hover:text-slate-700'}`}
         >
-          РЕГИСТРАЦИЯ МАСТЕРА
+          {t('workers.tab.register')}
           {activeTab === 'register' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-orange-500 rounded-t-full"></div>}
         </button>
       </div>
@@ -174,8 +177,8 @@ export default function Workers() {
                     <span className="text-2xl">✨</span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-xl text-slate-800">Умный поиск мастеров и материалов</h3>
-                    <p className="text-slate-600 text-sm mt-1">Опишите задачу и нужные материалы своими словами, и ИИ сам подберет людей, товары и подготовит договор.</p>
+                    <h3 className="font-bold text-xl text-slate-800">{t('workers.search.title')}</h3>
+                    <p className="text-slate-600 text-sm mt-1">{t('workers.search.desc')}</p>
                   </div>
                 </div>
 
@@ -183,7 +186,7 @@ export default function Workers() {
                   <Input
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Например: Мне нужны 3 грузчика завтра в Ташкенте и 20 мешков цемента, 3 банки краски..."
+                    placeholder={t('workers.search.placeholder')}
                     className="pl-4 pr-16 py-6 text-base bg-white rounded-xl shadow-sm border-slate-200 focus:border-brand-blue-500 focus:ring-brand-blue-500 outline-none"
                   />
                   <Button 
@@ -204,27 +207,27 @@ export default function Workers() {
                       
                       <h4 className="font-bold text-lg text-slate-800 mb-4 flex gap-2 items-center">
                         <CheckCircle2 className="w-5 h-5 text-green-500" />
-                        Заявка сформирована
+                        {t('workers.result.title')}
                       </h4>
                       
                       <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase">Категория мастеров</span>
+                          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase">{t('workers.result.category')}</span>
                           <div className="font-medium text-brand-blue-900 flex items-center gap-2 mt-1">
                             <requestResult.matchedCategory.icon className="w-4 h-4 text-brand-orange-500" />
-                            {requestResult.matchedCategory.name} ({requestResult.quantity || 1} чел.)
+                            {requestResult.matchedCategory.name} ({requestResult.quantity || 1})
                           </div>
                         </div>
                         <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase">Локация и Время</span>
-                          <p className="font-medium text-brand-blue-900 mt-1">{requestResult.location || 'Не указано'}, {requestResult.datetime || 'Не указано'}</p>
+                          <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase">{t('workers.result.location')}</span>
+                          <p className="font-medium text-brand-blue-900 mt-1">{requestResult.location || t('workers.result.not_specified')}, {requestResult.datetime || t('workers.result.not_specified')}</p>
                         </div>
                       </div>
 
                       {/* Materials Section */}
                       {requestResult.materials && requestResult.materials.length > 0 && (
                         <div className="mb-6">
-                          <h5 className="font-bold text-sm text-slate-800 mb-3 border-b border-slate-100 pb-2">Необходимые строительные материалы</h5>
+                          <h5 className="font-bold text-sm text-slate-800 mb-3 border-b border-slate-100 pb-2">{t('workers.result.materials_title')}</h5>
                           <ul className="space-y-2">
                             {requestResult.materials.map((mat: any, idx: number) => (
                               <li key={idx} className="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-lg border border-slate-100">
@@ -238,7 +241,7 @@ export default function Workers() {
 
                       {/* Payment Method */}
                       <div className="mb-6">
-                        <h5 className="font-bold text-sm text-slate-800 mb-3 border-b border-slate-100 pb-2">Форма оплаты по договору</h5>
+                        <h5 className="font-bold text-sm text-slate-800 mb-3 border-b border-slate-100 pb-2">{t('workers.result.payment_title')}</h5>
                         <div className="grid grid-cols-3 gap-3">
                           {PAYMENT_METHODS.map(pm => (
                             <div 
@@ -254,16 +257,16 @@ export default function Workers() {
 
                       <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-600 font-medium">Примерная стоимость услуг (за смену):</span>
+                          <span className="text-slate-600 font-medium">{t('workers.result.estimate')}</span>
                           <span className="text-xl font-bold tracking-tight text-slate-800">
-                            ~{requestResult.priceEstimate.toLocaleString()} сум
+                            ~{requestResult.priceEstimate.toLocaleString()} {t('workers.catalog.per_hour').replace('/ч', '')}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 mt-2">ИИ проанализировал среднюю ставку по рынку: {requestResult.matchedCategory.hourlyRate.toLocaleString()} сум/час за рабочего. Стоимость стройматериалов будет рассчитана отдельно при подтверждении магазином.</p>
+                        <p className="text-xs text-slate-500 mt-2">{t('workers.result.estimate_desc1')} {requestResult.matchedCategory.hourlyRate.toLocaleString()} {t('workers.result.estimate_desc2')}</p>
                       </div>
 
                       <Button type="submit" className="w-full bg-brand-orange-500 hover:bg-brand-orange-600 text-white font-bold h-12">
-                        Заключить договор на услуги
+                        {t('workers.result.btn_contract')}
                       </Button>
                     </form>
                   </div>
@@ -275,16 +278,16 @@ export default function Workers() {
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <CheckCircle2 className="w-8 h-8 text-green-600" />
                     </div>
-                    <h4 className="text-xl font-bold text-green-800 mb-2">Договор успешно сформирован!</h4>
+                    <h4 className="text-xl font-bold text-green-800 mb-2">{t('workers.contract.title')}</h4>
                     <p className="text-green-700 max-w-md mx-auto">
-                      Заявка на мастеров и строительные материалы передана в обработку. Форма оплаты: <b>{PAYMENT_METHODS.find(p => p.id === requestResult?.paymentMethod)?.name || 'Не указано'}</b>. <br/><br/>Специалисты свяжутся с вами в течение 10 минут.
+                      {t('workers.contract.desc1')} <b>{PAYMENT_METHODS.find(p => p.id === requestResult?.paymentMethod)?.name || t('workers.result.not_specified')}</b>. <br/><br/>{t('workers.contract.desc2')}
                     </p>
                     <div className="flex justify-center gap-4 mt-6">
                       <Button onClick={() => { setOrderConfirmed(false); setPrompt(''); setRequestResult(null); }} className="bg-green-600 hover:bg-green-700 text-white">
-                        Новый запрос
+                        {t('workers.contract.btn_new')}
                       </Button>
                       <Button variant="outline" onClick={downloadContract} className="border-green-600 text-green-700 hover:bg-green-100">
-                        <Download className="w-4 h-4 mr-2" /> Скачать Договор (PDF)
+                        <Download className="w-4 h-4 mr-2" /> {t('workers.contract.btn_download')}
                       </Button>
                     </div>
                   </div>
@@ -295,7 +298,7 @@ export default function Workers() {
 
           {/* Categories Sidebar */}
           <div className="md:col-span-1 space-y-4">
-            <h3 className="font-bold text-lg text-slate-800 border-b border-slate-200 pb-2">Каталог услуг</h3>
+            <h3 className="font-bold text-lg text-slate-800 border-b border-slate-200 pb-2">{t('workers.catalog.title')}</h3>
             <div className="grid grid-cols-1 gap-3">
               {CATEGORIES.map(category => {
                 const Icon = category.icon;
@@ -306,7 +309,7 @@ export default function Workers() {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-800 group-hover:text-brand-blue-600 transition-colors">{category.name}</h4>
-                      <span className="text-xs font-medium text-slate-500">от {category.hourlyRate.toLocaleString()} сум/ч</span>
+                      <span className="text-xs font-medium text-slate-500">{t('workers.catalog.from')} {category.hourlyRate.toLocaleString()} {t('workers.catalog.per_hour')}</span>
                     </div>
                   </div>
                 );
@@ -319,36 +322,36 @@ export default function Workers() {
           <Card className="rounded-2xl border-slate-200 shadow-sm">
             <CardContent className="p-8">
               {regConfirmed ? (
-                 <div className="text-center py-8 animate-in zoom-in duration-300">
+                  <div className="text-center py-8 animate-in zoom-in duration-300">
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <CheckCircle2 className="w-8 h-8 text-green-600" />
                     </div>
-                    <h4 className="text-xl font-bold text-green-800 mb-2">Регистрация успешна!</h4>
+                    <h4 className="text-xl font-bold text-green-800 mb-2">{t('workers.register.success.title')}</h4>
                     <p className="text-green-700 max-w-sm mx-auto">
-                      Вы успешно зарегистрированы как мастер в платформе. Теперь клиенты смогут находить вас.
+                      {t('workers.register.success.desc')}
                     </p>
                  </div>
               ) : (
                 <form onSubmit={handleRegister} className="space-y-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-slate-800">Станьте мастером платформы</h3>
-                    <p className="text-slate-500 text-sm mt-1">Заполните форму, чтобы получать заказы от строительных компаний и частных лиц.</p>
+                    <h3 className="text-2xl font-bold text-slate-800">{t('workers.register.title')}</h3>
+                    <p className="text-slate-500 text-sm mt-1">{t('workers.register.desc')}</p>
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ваше Имя / ФИО</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('workers.register.label.name')}</label>
                       <Input 
                         required 
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
-                        placeholder="Например: Рустам Ахмедов" 
+                        placeholder={t('workers.register.placeholder.name')} 
                         className="bg-slate-50 h-12" 
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Телефон</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('workers.register.label.phone')}</label>
                       <Input 
                         required 
                         type="tel"
@@ -360,7 +363,7 @@ export default function Workers() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Специализация (Категория)</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('workers.register.label.category')}</label>
                       <select 
                         value={regCategory}
                         onChange={(e) => setRegCategory(e.target.value)}
@@ -375,14 +378,14 @@ export default function Workers() {
                     <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 mb-4 border border-blue-100 flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                       <div>
-                        <strong>Договор Оферты</strong>
-                        <p className="text-blue-700/80 mt-1">Регистрируясь, вы соглашаетесь на обработку заказов через платформу и можете принимать оплату перечислением, налом или в рассрочку (от банка).</p>
+                        <strong>{t('workers.register.terms.title')}</strong>
+                        <p className="text-blue-700/80 mt-1">{t('workers.register.terms.desc')}</p>
                       </div>
                     </div>
                   </div>
 
                   <Button type="submit" className="w-full bg-brand-blue-600 hover:bg-brand-blue-700 text-white font-bold h-14 text-base">
-                    Зарегистрироваться
+                    {t('workers.register.btn')}
                   </Button>
                 </form>
               )}

@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from './lib/firebase';
 import { useAuthStore } from './store/auth';
+import { useLangStore } from './store/lang';
 import { Layout } from './components/Layout';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
@@ -48,7 +49,8 @@ function AuthObserver({ children }: { children: React.ReactNode }) {
   }, [fetchProfile, setLoading]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-brand-blue-500 font-medium">Загрузка...</div>;
+    const t = useLangStore.getState().t;
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-brand-blue-500 font-medium">{t('app.loading')}</div>;
   }
 
   return <>{children}</>;

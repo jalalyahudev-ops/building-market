@@ -37,6 +37,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data() as Omit<AppUser, 'id'>;
+        
+        // Автоматически дать права админа владельцу
+        const fbUser = get().firebaseUser;
+        if (fbUser && fbUser.email === 'jalalyahudev@gmail.com' && data.role !== 'admin') {
+          try {
+            await setDoc(docRef, { role: 'admin' }, { merge: true });
+            data.role = 'admin';
+          } catch (err) {
+            console.error("Could not upgrade to admin role:", err);
+          }
+        }
+        
         set({ user: { id: docSnap.id, ...data } });
       } else {
         set({ user: null });

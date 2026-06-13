@@ -533,7 +533,10 @@ export default function Dashboard() {
               </div>
             )}
             
-            {activeTab === 'add-product' && store && (
+          </div>
+        )}
+
+        {activeTab === 'add-product' && store && (
               <div className="space-y-6 max-w-2xl">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold text-slate-800">Add New Product</h2>
@@ -776,8 +779,6 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-          </div>
-        )}
         {activeTab === 'store-settings' && store && (
           <div className="space-y-6 max-w-2xl">
             <h2 className="text-2xl font-bold text-slate-800">Store Settings</h2>
